@@ -1,0 +1,211 @@
+export const dictionaries = {
+  ar: {
+    site: { name: 'برمجلي للأزياء', tagline: 'متجرك للأزياء العصرية' },
+    nav: {
+      home: 'الرئيسية', kids: 'أطفالي', women: 'حريمي', men: 'رجالي',
+      sale: 'تخفيضات', new: 'وصل حديثاً', bestsellers: 'الأكثر مبيعاً',
+      cart: 'السلة', wishlist: 'المفضلة', account: 'حسابي',
+      orders: 'طلباتي', login: 'تسجيل الدخول', register: 'إنشاء حساب',
+      logout: 'تسجيل خروج', search: 'ابحث عن منتج…', admin: 'لوحة التحكم',
+      contact: 'اتصل بنا', faq: 'الأسئلة الشائعة', about: 'عن المتجر',
+    },
+    hero: {
+      eyebrow: 'مجموعة 2026',
+      title: 'أزياء عصرية لكل أفراد العائلة',
+      subtitle: 'اكتشف تشكيلتنا الواسعة من الملابس الفاخرة للأطفال والسيدات والرجال — بأفضل الخامات وأحدث الموضة.',
+      cta: 'تسوّق الآن',
+      cta2: 'استكشف العروض',
+    },
+    sections: {
+      shopByCategory: 'تسوّق حسب القسم',
+      featured: 'منتجات مختارة لك',
+      bestsellers: 'الأكثر مبيعاً',
+      newArrivals: 'وصل حديثاً',
+      whyUs: 'لماذا تختار برمجلي؟',
+      testimonials: 'آراء عملائنا',
+      newsletter: 'اشترك في النشرة البريدية',
+      newsletterDesc: 'احصل على آخر العروض وأحدث المنتجات في بريدك',
+    },
+    features: {
+      shipping:  { title: 'شحن لكل المحافظات', desc: 'توصيل سريع وآمن لكل أنحاء مصر' },
+      returns:   { title: 'إرجاع خلال 14 يوم', desc: 'استبدال أو استرداد بدون أسئلة' },
+      payment:   { title: 'دفع آمن متعدد', desc: 'فيزا، فوري، باي موب، فودافون كاش' },
+      support:   { title: 'دعم فني 24/7', desc: 'فريقنا جاهز للرد على استفساراتك' },
+    },
+    product: {
+      addToCart: 'أضف إلى السلة', buyNow: 'اشتر الآن',
+      addToWishlist: 'أضف للمفضلة', removeFromWishlist: 'إزالة من المفضلة',
+      size: 'المقاس', color: 'اللون', quantity: 'الكمية',
+      inStock: 'متوفر', outOfStock: 'غير متوفر', lowStock: 'الكمية محدودة',
+      description: 'الوصف', specs: 'المواصفات', reviews: 'التقييمات',
+      sku: 'كود المنتج', brand: 'الماركة', material: 'الخامة',
+      relatedProducts: 'منتجات مشابهة', off: 'خصم',
+      writeReview: 'اكتب تقييماً', save: 'وفر',
+    },
+    cart: {
+      title: 'سلة التسوق', empty: 'سلتك فارغة',
+      emptyDesc: 'لم تضف أي منتجات بعد. تصفح متجرنا واكتشف عروضنا.',
+      continueShopping: 'تابع التسوق',
+      subtotal: 'المجموع الفرعي', shipping: 'الشحن', discount: 'الخصم',
+      total: 'الإجمالي', checkout: 'إتمام الشراء', remove: 'إزالة',
+      coupon: 'كود الخصم', applyCoupon: 'تطبيق', couponApplied: 'تم تطبيق الكوبون',
+      freeShipping: 'مجاني', items: 'منتجات',
+    },
+    checkout: {
+      title: 'إتمام الشراء', shipping: 'بيانات الشحن', payment: 'طريقة الدفع',
+      review: 'مراجعة الطلب', placeOrder: 'تأكيد الطلب',
+      fullName: 'الاسم الكامل', phone: 'رقم الهاتف',
+      governorate: 'المحافظة', city: 'المدينة', street: 'الشارع',
+      building: 'المبنى', apartment: 'الشقة', notes: 'ملاحظات إضافية',
+      methods: { cod: 'الدفع عند الاستلام', card: 'بطاقة ائتمان', fawry: 'فوري', paymob: 'باي موب', vodafone_cash: 'فودافون كاش', instapay: 'إنستا باي' },
+      orderSuccess: 'تم استلام طلبك بنجاح!', orderNumber: 'رقم الطلب',
+      thankYou: 'شكراً لشرائك من برمجلي', viewOrder: 'عرض تفاصيل الطلب',
+    },
+    auth: {
+      loginTitle: 'تسجيل الدخول', registerTitle: 'إنشاء حساب جديد',
+      email: 'البريد الإلكتروني', password: 'كلمة المرور',
+      name: 'الاسم الكامل', phone: 'رقم الهاتف',
+      noAccount: 'ليس لديك حساب؟', haveAccount: 'لديك حساب بالفعل؟',
+      submitLogin: 'دخول', submitRegister: 'تسجيل', or: 'أو',
+    },
+    filters: {
+      title: 'الفلاتر', clear: 'مسح الفلاتر',
+      price: 'السعر', size: 'المقاس', color: 'اللون',
+      brand: 'الماركة', sort: 'الترتيب', search: 'بحث',
+      sortOptions: {
+        newest: 'الأحدث', 'price-asc': 'السعر: من الأقل للأعلى',
+        'price-desc': 'السعر: من الأعلى للأقل',
+        bestseller: 'الأكثر مبيعاً', rating: 'الأعلى تقييماً',
+      },
+      noResults: 'لا توجد نتائج', tryDifferent: 'جرّب تغيير الفلاتر',
+    },
+    account: {
+      profile: 'الملف الشخصي', myOrders: 'طلباتي',
+      addresses: 'عناويني', wishlist: 'المفضلة', settings: 'الإعدادات',
+      orderHistory: 'تاريخ الطلبات', noOrders: 'لا توجد طلبات بعد',
+    },
+    footer: {
+      about: 'عن المتجر', quickLinks: 'روابط سريعة', help: 'مساعدة',
+      contact: 'تواصل معنا',
+      developedBy: 'تم التطوير بواسطة',
+      rights: 'جميع الحقوق محفوظة',
+      payments: 'وسائل الدفع المقبولة',
+    },
+    common: {
+      currency: 'ج.م', loading: 'جاري التحميل…', error: 'حدث خطأ',
+      retry: 'إعادة المحاولة', viewAll: 'عرض الكل', back: 'رجوع',
+      yes: 'نعم', no: 'لا', save: 'حفظ', cancel: 'إلغاء',
+      add: 'إضافة', edit: 'تعديل', delete: 'حذف',
+    },
+  },
+  en: {
+    site: { name: 'Barmagly Fashion', tagline: 'Your modern fashion destination' },
+    nav: {
+      home: 'Home', kids: 'Kids', women: 'Women', men: 'Men',
+      sale: 'Sale', new: 'New Arrivals', bestsellers: 'Best Sellers',
+      cart: 'Cart', wishlist: 'Wishlist', account: 'Account',
+      orders: 'My Orders', login: 'Sign In', register: 'Sign Up',
+      logout: 'Logout', search: 'Search products…', admin: 'Dashboard',
+      contact: 'Contact', faq: 'FAQ', about: 'About',
+    },
+    hero: {
+      eyebrow: 'Spring Collection 2026',
+      title: 'Modern fashion for the whole family',
+      subtitle: 'Discover our wide collection of premium clothing for kids, women, and men — top fabrics and the latest trends.',
+      cta: 'Shop now',
+      cta2: 'Explore deals',
+    },
+    sections: {
+      shopByCategory: 'Shop by Category',
+      featured: 'Featured for you',
+      bestsellers: 'Best Sellers',
+      newArrivals: 'New Arrivals',
+      whyUs: 'Why choose Barmagly?',
+      testimonials: 'What customers say',
+      newsletter: 'Subscribe to our newsletter',
+      newsletterDesc: 'Get the latest deals and new arrivals straight to your inbox',
+    },
+    features: {
+      shipping:  { title: 'Egypt-wide shipping', desc: 'Fast and safe delivery everywhere' },
+      returns:   { title: '14-day returns',      desc: 'Easy exchange or refund, no questions' },
+      payment:   { title: 'Secure payment',      desc: 'Visa, Fawry, Paymob, Vodafone Cash' },
+      support:   { title: '24/7 Support',         desc: 'Our team is ready to help anytime' },
+    },
+    product: {
+      addToCart: 'Add to Cart', buyNow: 'Buy Now',
+      addToWishlist: 'Add to Wishlist', removeFromWishlist: 'Remove from Wishlist',
+      size: 'Size', color: 'Color', quantity: 'Quantity',
+      inStock: 'In Stock', outOfStock: 'Out of Stock', lowStock: 'Low stock',
+      description: 'Description', specs: 'Specs', reviews: 'Reviews',
+      sku: 'SKU', brand: 'Brand', material: 'Material',
+      relatedProducts: 'Related Products', off: 'OFF',
+      writeReview: 'Write a review', save: 'Save',
+    },
+    cart: {
+      title: 'Shopping Cart', empty: 'Your cart is empty',
+      emptyDesc: "You haven't added any products yet. Browse our store and discover our offers.",
+      continueShopping: 'Continue Shopping',
+      subtotal: 'Subtotal', shipping: 'Shipping', discount: 'Discount',
+      total: 'Total', checkout: 'Checkout', remove: 'Remove',
+      coupon: 'Coupon code', applyCoupon: 'Apply', couponApplied: 'Coupon applied',
+      freeShipping: 'Free', items: 'items',
+    },
+    checkout: {
+      title: 'Checkout', shipping: 'Shipping Address', payment: 'Payment Method',
+      review: 'Review Order', placeOrder: 'Place Order',
+      fullName: 'Full Name', phone: 'Phone',
+      governorate: 'Governorate', city: 'City', street: 'Street',
+      building: 'Building', apartment: 'Apartment', notes: 'Additional notes',
+      methods: { cod: 'Cash on Delivery', card: 'Credit Card', fawry: 'Fawry', paymob: 'Paymob', vodafone_cash: 'Vodafone Cash', instapay: 'InstaPay' },
+      orderSuccess: 'Your order was placed successfully!', orderNumber: 'Order Number',
+      thankYou: 'Thank you for shopping with Barmagly', viewOrder: 'View order details',
+    },
+    auth: {
+      loginTitle: 'Sign in to your account', registerTitle: 'Create a new account',
+      email: 'Email', password: 'Password',
+      name: 'Full Name', phone: 'Phone',
+      noAccount: "Don't have an account?", haveAccount: 'Already have an account?',
+      submitLogin: 'Sign in', submitRegister: 'Create account', or: 'or',
+    },
+    filters: {
+      title: 'Filters', clear: 'Clear filters',
+      price: 'Price', size: 'Size', color: 'Color',
+      brand: 'Brand', sort: 'Sort', search: 'Search',
+      sortOptions: {
+        newest: 'Newest', 'price-asc': 'Price: Low to High',
+        'price-desc': 'Price: High to Low',
+        bestseller: 'Best Seller', rating: 'Top Rated',
+      },
+      noResults: 'No results found', tryDifferent: 'Try changing filters',
+    },
+    account: {
+      profile: 'Profile', myOrders: 'My Orders',
+      addresses: 'My Addresses', wishlist: 'Wishlist', settings: 'Settings',
+      orderHistory: 'Order History', noOrders: 'No orders yet',
+    },
+    footer: {
+      about: 'About', quickLinks: 'Quick Links', help: 'Help',
+      contact: 'Contact us',
+      developedBy: 'Developed by',
+      rights: 'All rights reserved',
+      payments: 'Accepted payment methods',
+    },
+    common: {
+      currency: 'EGP', loading: 'Loading…', error: 'An error occurred',
+      retry: 'Retry', viewAll: 'View all', back: 'Back',
+      yes: 'Yes', no: 'No', save: 'Save', cancel: 'Cancel',
+      add: 'Add', edit: 'Edit', delete: 'Delete',
+    },
+  },
+};
+
+export const locales = ['ar', 'en'];
+export const defaultLocale = 'ar';
+
+export function getDictionary(locale) {
+  return dictionaries[locale] ?? dictionaries[defaultLocale];
+}
+
+export function isRtl(locale) {
+  return locale === 'ar';
+}
