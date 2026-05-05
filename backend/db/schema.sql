@@ -1,8 +1,8 @@
--- Barmagly Fashion Store - MySQL Schema
+-- AURA Fashion Store - MySQL/MariaDB Schema
 -- Charset: utf8mb4 for full Arabic/emoji support
+-- Note: drops ordered child→parent so no need to disable FK checks
 
 SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
@@ -17,8 +17,6 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS settings;
-
-SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================
 -- USERS (admins + customers)
