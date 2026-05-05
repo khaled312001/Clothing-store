@@ -41,6 +41,9 @@ export default function ProductPage() {
     }).catch(() => {});
   }, [slug]);
 
+  // Reset gallery to first image when color changes
+  useEffect(() => { setActiveImg(0); }, [color]);
+
   if (!data) return <div className="container-app py-20 text-center text-gray-500">{t.common.loading}</div>;
 
   const { product, reviews, related } = data;
@@ -50,7 +53,17 @@ export default function ProductPage() {
   const colors = [...new Map(product.variants.map(v => [v.color_name_en, { ar: v.color_name_ar, en: v.color_name_en, hex: v.color_hex }])).values()];
   const variant = product.variants.find(v => v.size === size && v.color_name_en === color);
   const stock = variant?.stock ?? 0;
-  const off = discountPercent(product.price, product.compare_at_price);
+
+  // Per-variant pricing — use override when set, fall back to base
+  const currentPrice   = Number(variant?.price_override ?? product.price);
+  const currentCompare = variant?.compare_at_override
+    ? Number(variant.compare_at_override)
+    : (variant?.price_override ? null : (product.compare_at_price || null));
+  const off = discountPercent(currentPrice, currentCompare);
+
+  // Per-color gallery — show color-specific images when available, else default
+  const colorGallery = (product.variant_images?.[color] || []).map(v => ({ url: v.url || v }));
+  const galleryImages = colorGallery.length ? colorGallery : product.images;
   const isWished = user
     ? wishlist.items?.some(i => i.product_id === product.id)
     : wishlist.productIds?.includes(product.id);
@@ -63,7 +76,8 @@ export default function ProductPage() {
       else cart.addLocal({
         variant_id: variant.id, product_id: product.id,
         slug: product.slug, name_ar: product.name_ar, name_en: product.name_en,
-        price: Number(product.price), image: product.image,
+        price: currentPrice,
+        image: galleryImages[0]?.url || product.image,
         size: variant.size, color_name_ar: variant.color_name_ar, color_name_en: variant.color_name_en, color_hex: variant.color_hex,
         quantity: qty,
       });
@@ -94,7 +108,7 @@ export default function ProductPage() {
     offers: {
       '@type': 'Offer',
       priceCurrency: 'EGP',
-      price: Number(product.price),
+      price: currentPrice,
       availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     },
     ...(Number(product.rating_avg) > 0 && {
@@ -122,12 +136,12 @@ export default function ProductPage() {
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Gallery */}
+          {/* Gallery — switches based on selected color */}
           <div>
-            <div className="relative aspect-square bg-gray-50 rounded-3xl overflow-hidden">
-              {product.images[activeImg]?.url && (
+            <div key={color} className="relative aspect-square bg-gray-50 rounded-3xl overflow-hidden animate-fade-in">
+              {galleryImages[activeImg]?.url && (
                 <Image
-                  src={product.images[activeImg].url}
+                  src={galleryImages[activeImg].url}
                   alt={name}
                   fill
                   className="object-cover"
@@ -138,21 +152,29 @@ export default function ProductPage() {
               {off > 0 && (
                 <span className="absolute top-4 start-4 badge bg-red-500 text-white text-sm px-3 py-1">-{off}%</span>
               )}
+              {colorGallery.length > 0 && (
+                <span className="absolute top-4 end-4 badge bg-brand-900/80 backdrop-blur text-white text-xs px-2 py-1 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.find(c => c.en === color)?.hex }} />
+                  {isAr ? colors.find(c => c.en === color)?.ar : color}
+                </span>
+              )}
             </div>
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {product.images.map((img, i) => (
-                <button
-                  key={img.id || i}
-                  onClick={() => setActiveImg(i)}
-                  className={cn(
-                    'relative aspect-square rounded-xl overflow-hidden border-2 transition',
-                    activeImg === i ? 'border-brand-600' : 'border-transparent hover:border-gray-300'
-                  )}
-                >
-                  <Image src={img.url} alt="" fill sizes="20vw" className="object-cover" />
-                </button>
-              ))}
-            </div>
+            {galleryImages.length > 1 && (
+              <div className="mt-3 grid grid-cols-5 gap-2">
+                {galleryImages.map((img, i) => (
+                  <button
+                    key={`${color}-${i}`}
+                    onClick={() => setActiveImg(i)}
+                    className={cn(
+                      'relative aspect-square rounded-xl overflow-hidden border-2 transition',
+                      activeImg === i ? 'border-brand-600' : 'border-transparent hover:border-gray-300'
+                    )}
+                  >
+                    <Image src={img.url} alt="" fill sizes="20vw" className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info */}
@@ -175,14 +197,21 @@ export default function ProductPage() {
               <span className="text-xs text-gray-500">{t.product.sku}: {product.sku}</span>
             </div>
 
-            {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6">
-              <span className="text-3xl font-extrabold text-brand-900">{formatPrice(product.price, locale)}</span>
-              {product.compare_at_price && Number(product.compare_at_price) > Number(product.price) && (
+            {/* Price — reflects selected variant */}
+            <div className="flex items-baseline gap-3 mb-6 flex-wrap">
+              <span key={`${color}-${size}`} className="text-3xl font-extrabold text-brand-900 animate-fade-in">
+                {formatPrice(currentPrice, locale)}
+              </span>
+              {currentCompare && Number(currentCompare) > currentPrice && (
                 <>
-                  <span className="text-lg text-gray-400 line-through">{formatPrice(product.compare_at_price, locale)}</span>
-                  <span className="badge bg-emerald-100 text-emerald-700">{t.product.save} {formatPrice(product.compare_at_price - product.price, locale)}</span>
+                  <span className="text-lg text-gray-400 line-through">{formatPrice(currentCompare, locale)}</span>
+                  <span className="badge bg-emerald-100 text-emerald-700">{t.product.save} {formatPrice(currentCompare - currentPrice, locale)}</span>
                 </>
+              )}
+              {variant?.price_override && (
+                <span className="text-[10px] uppercase font-bold text-accent-700 bg-accent-100 px-2 py-0.5 rounded">
+                  {isAr ? 'سعر خاص باللون' : 'Color-specific price'}
+                </span>
               )}
             </div>
 

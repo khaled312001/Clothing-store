@@ -67,9 +67,13 @@ router.get('/products', ah(async (req, res) => {
 router.get('/products/:id', ah(async (req, res) => {
   const [rows] = await pool.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
   if (!rows.length) return res.status(404).json({ error: 'Not found' });
-  const [images]   = await pool.query('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order', [req.params.id]);
-  const [variants] = await pool.query('SELECT * FROM product_variants WHERE product_id = ? ORDER BY size, color_name_en', [req.params.id]);
-  res.json({ product: rows[0], images, variants });
+  const [images]    = await pool.query('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order', [req.params.id]);
+  const [variants]  = await pool.query('SELECT * FROM product_variants WHERE product_id = ? ORDER BY size, color_name_en', [req.params.id]);
+  const [vimgs]     = await pool.query('SELECT * FROM variant_images WHERE product_id = ? ORDER BY color_name_en, sort_order', [req.params.id]);
+  // Group variant images by color
+  const variant_images = {};
+  for (const v of vimgs) (variant_images[v.color_name_en] ??= []).push(v);
+  res.json({ product: rows[0], images, variants, variant_images });
 }));
 
 // Create product (with variants + images)
@@ -106,9 +110,26 @@ router.post('/products', ah(async (req, res) => {
     if (Array.isArray(f.variants)) {
       for (const v of f.variants) {
         await conn.query(
-          `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock) VALUES (?, ?, ?, ?, ?, ?)`,
-          [pid, v.size, v.color_name_ar, v.color_name_en, v.color_hex, Number(v.stock) || 0]
+          `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock, price_override, compare_at_override)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [pid, v.size, v.color_name_ar, v.color_name_en, v.color_hex, Number(v.stock) || 0,
+           v.price_override ? Number(v.price_override) : null,
+           v.compare_at_override ? Number(v.compare_at_override) : null]
         );
+      }
+    }
+    // Per-color images
+    if (f.variant_images && typeof f.variant_images === 'object') {
+      for (const [color, urls] of Object.entries(f.variant_images)) {
+        if (!Array.isArray(urls)) continue;
+        for (let i = 0; i < urls.length; i++) {
+          const u = typeof urls[i] === 'string' ? urls[i] : urls[i]?.url;
+          if (!u) continue;
+          await conn.query(
+            `INSERT INTO variant_images (product_id, color_name_en, url, sort_order) VALUES (?, ?, ?, ?)`,
+            [pid, color, u, i]
+          );
+        }
       }
     }
     await conn.commit();
@@ -160,9 +181,28 @@ router.put('/products/:id', ah(async (req, res) => {
       for (const v of f.variants) {
         if (!v.size || !v.color_name_en) continue;
         await conn.query(
-          `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock) VALUES (?, ?, ?, ?, ?, ?)`,
-          [req.params.id, v.size, v.color_name_ar || v.color_name_en, v.color_name_en, v.color_hex || '#000000', Number(v.stock) || 0]
+          `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock, price_override, compare_at_override)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [req.params.id, v.size, v.color_name_ar || v.color_name_en, v.color_name_en, v.color_hex || '#000000',
+           Number(v.stock) || 0,
+           v.price_override ? Number(v.price_override) : null,
+           v.compare_at_override ? Number(v.compare_at_override) : null]
         );
+      }
+    }
+    // Replace variant_images if provided ({ "Black": ["url1","url2"], "White": [...] })
+    if (f.variant_images && typeof f.variant_images === 'object') {
+      await conn.query('DELETE FROM variant_images WHERE product_id = ?', [req.params.id]);
+      for (const [color, urls] of Object.entries(f.variant_images)) {
+        if (!Array.isArray(urls)) continue;
+        for (let i = 0; i < urls.length; i++) {
+          const u = typeof urls[i] === 'string' ? urls[i] : urls[i]?.url;
+          if (!u) continue;
+          await conn.query(
+            `INSERT INTO variant_images (product_id, color_name_en, url, sort_order) VALUES (?, ?, ?, ?)`,
+            [req.params.id, color, u, i]
+          );
+        }
       }
     }
     await conn.commit();
@@ -371,8 +411,13 @@ router.post('/pos/sale', ah(async (req, res) => {
     const variantIds = items.map(i => i.variant_id);
     const [vrows] = await conn.query(
       `SELECT pv.id, pv.product_id, pv.size, pv.color_name_ar, pv.color_name_en, pv.color_hex, pv.stock,
-              p.name_ar, p.name_en, p.price,
-              (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
+              pv.price_override,
+              p.name_ar, p.name_en, p.price AS base_price,
+              COALESCE(pv.price_override, p.price) AS price,
+              COALESCE(
+                (SELECT url FROM variant_images WHERE product_id = p.id AND color_name_en = pv.color_name_en ORDER BY sort_order LIMIT 1),
+                (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1)
+              ) AS image
        FROM product_variants pv JOIN products p ON p.id = pv.product_id
        WHERE pv.id IN (${placeholders}) FOR UPDATE`,
       variantIds
@@ -456,7 +501,8 @@ router.get('/pos/products', ah(async (req, res) => {
     const ids = rows.map(r => r.id);
     const ph = ids.map(() => '?').join(',');
     const [vars] = await pool.query(
-      `SELECT id, product_id, size, color_name_ar, color_name_en, color_hex, stock
+      `SELECT id, product_id, size, color_name_ar, color_name_en, color_hex, stock,
+              price_override, compare_at_override
        FROM product_variants WHERE product_id IN (${ph}) AND stock > 0`,
       ids
     );

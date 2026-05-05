@@ -61,7 +61,10 @@ router.post('/', authRequired, ah(async (req, res) => {
       `SELECT ci.id AS cart_id, ci.product_id, ci.variant_id, ci.quantity,
               p.name_ar, p.name_en, p.price,
               v.size, v.color_name_ar, v.color_name_en, v.color_hex, v.stock, v.price_override,
-              (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
+              COALESCE(
+                (SELECT url FROM variant_images WHERE product_id = p.id AND color_name_en = v.color_name_en ORDER BY sort_order LIMIT 1),
+                (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1)
+              ) AS image
        FROM cart_items ci
        JOIN products p ON p.id = ci.product_id
        JOIN product_variants v ON v.id = ci.variant_id

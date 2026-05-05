@@ -146,11 +146,19 @@ export function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Price */}
-        <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-base font-bold text-brand-900">
-            {formatPrice(product.price, locale)}
-          </span>
+        {/* Price — shows range when variants differ */}
+        <div className="mt-auto flex items-baseline gap-2 flex-wrap">
+          {product.min_price && product.max_price && product.min_price !== product.max_price ? (
+            <span className="text-base font-bold text-brand-900">
+              {formatPrice(product.min_price, locale)}
+              <span className="text-xs text-gray-500 font-normal mx-1">—</span>
+              {formatPrice(product.max_price, locale)}
+            </span>
+          ) : (
+            <span className="text-base font-bold text-brand-900">
+              {formatPrice(product.price, locale)}
+            </span>
+          )}
           {product.compare_at_price && Number(product.compare_at_price) > Number(product.price) && (
             <span className="text-xs text-gray-400 line-through">
               {formatPrice(product.compare_at_price, locale)}

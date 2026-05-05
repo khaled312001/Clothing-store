@@ -177,6 +177,13 @@ export const products = [
       'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900' + Q,
       'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900' + Q,
     ],
+    color_images: {
+      'White': ['https://images.unsplash.com/photo-1485518882345-15568b007407?w=900' + Q,
+                'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900' + Q],
+      'Beige': ['https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900' + Q],
+      'Black': ['https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=900' + Q],
+      'Pink':  ['https://images.unsplash.com/photo-1582142306909-195724d33ffc?w=900' + Q],
+    },
     variants: variants(['S','M','L','XL'], [C.white, C.beige, C.black, C.pink]),
   },
   {
@@ -231,7 +238,16 @@ export const products = [
       'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900' + Q,
       'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=900' + Q,
     ],
-    variants: variants(['S','M','L','XL'], [C.black, C.red, C.navy]),
+    color_images: {
+      'Black': ['https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900' + Q],
+      'Red':   ['https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=900' + Q],
+      'Navy':  ['https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900' + Q],
+    },
+    // Red color is a special edition — premium price
+    variants: [
+      ...variants(['S','M','L','XL'], [C.black, C.navy]),
+      ...variants(['S','M','L','XL'], [C.red]).map(v => ({ ...v, price_override: 2199, compare_at_override: 2900 })),
+    ],
   },
   {
     category_slug: 'women-evening', sku: 'AURA-WE-002', brand: 'AURA Couture',
@@ -287,10 +303,15 @@ export const products = [
       'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=900' + Q,
       'https://images.unsplash.com/photo-1591561954557-26941169b49e?w=900' + Q,
     ],
+    color_images: {
+      'Black': ['https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=900' + Q],
+      'Brown': ['https://images.unsplash.com/photo-1591561954557-26941169b49e?w=900' + Q],
+      'Beige': ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=900' + Q],
+    },
     variants: [
       { size: 'OneSize', color_ar: C.black.ar, color_en: C.black.en, color_hex: C.black.hex, stock: 25 },
-      { size: 'OneSize', color_ar: C.brown.ar, color_en: C.brown.en, color_hex: C.brown.hex, stock: 18 },
-      { size: 'OneSize', color_ar: C.beige.ar, color_en: C.beige.en, color_hex: C.beige.hex, stock: 12 },
+      { size: 'OneSize', color_ar: C.brown.ar, color_en: C.brown.en, color_hex: C.brown.hex, stock: 18, price_override: 1099, compare_at_override: 1499 },
+      { size: 'OneSize', color_ar: C.beige.ar, color_en: C.beige.en, color_hex: C.beige.hex, stock: 12, price_override: 1199, compare_at_override: 1599 },
     ],
   },
   {
@@ -322,7 +343,18 @@ export const products = [
       'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=900' + Q,
       'https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=900' + Q,
     ],
-    variants: variants(['S','M','L','XL','XXL'], [C.white, C.black, C.navy, C.gray, C.olive]),
+    // Per-color galleries — different photos shown when each color is selected
+    color_images: {
+      'White': ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=900' + Q],
+      'Black': ['https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=900' + Q,
+                'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=900' + Q],
+      'Navy':  ['https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=900' + Q],
+    },
+    // Per-variant pricing — XXL slightly pricier
+    variants: [
+      ...variants(['S','M','L','XL'], [C.white, C.black, C.navy, C.gray, C.olive]),
+      ...variants(['XXL'], [C.white, C.black, C.navy, C.gray, C.olive]).map(v => ({ ...v, price_override: 279, compare_at_override: 380 })),
+    ],
   },
   {
     category_slug: 'men-tshirts', sku: 'AURA-MT-002', brand: 'AURA Men',
@@ -430,7 +462,15 @@ export const products = [
       'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=900' + Q,
       'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=900' + Q,
     ],
-    variants: variants(['S','M','L','XL','XXL'], [C.black, C.brown]),
+    color_images: {
+      'Black': ['https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=900' + Q],
+      'Brown': ['https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=900' + Q],
+    },
+    // Brown leather costs more (premium hide)
+    variants: [
+      ...variants(['S','M','L','XL','XXL'], [C.black]),
+      ...variants(['S','M','L','XL','XXL'], [C.brown]).map(v => ({ ...v, price_override: 2799, compare_at_override: 3899 })),
+    ],
   },
   {
     category_slug: 'men-jackets', sku: 'AURA-MJ-002', brand: 'AURA Outerwear',

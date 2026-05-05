@@ -92,7 +92,7 @@ async function seedProducts(conn, catMap) {
     const pid = r.insertId;
     productIds[p.sku] = pid;
 
-    // images
+    // base images (default for any color without specific images)
     for (let i = 0; i < p.images.length; i++) {
       await conn.query(
         `INSERT INTO product_images (product_id, url, alt, sort_order, is_primary) VALUES (?, ?, ?, ?, ?)`,
@@ -100,12 +100,26 @@ async function seedProducts(conn, catMap) {
       );
     }
 
-    // variants
+    // variants (with optional price_override + compare_at_override)
     for (const v of p.variants) {
       await conn.query(
-        `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock) VALUES (?, ?, ?, ?, ?, ?)`,
-        [pid, v.size, v.color_ar, v.color_en, v.color_hex, v.stock]
+        `INSERT INTO product_variants (product_id, size, color_name_ar, color_name_en, color_hex, stock, price_override, compare_at_override)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [pid, v.size, v.color_ar, v.color_en, v.color_hex, v.stock,
+         v.price_override ?? null, v.compare_at_override ?? null]
       );
+    }
+
+    // per-color variant images
+    if (p.color_images && typeof p.color_images === 'object') {
+      for (const [colorEn, urls] of Object.entries(p.color_images)) {
+        for (let i = 0; i < urls.length; i++) {
+          await conn.query(
+            `INSERT INTO variant_images (product_id, color_name_en, url, sort_order) VALUES (?, ?, ?, ?)`,
+            [pid, colorEn, urls[i], i]
+          );
+        }
+      }
     }
   }
   return productIds;

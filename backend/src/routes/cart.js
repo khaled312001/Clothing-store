@@ -8,9 +8,14 @@ const router = Router();
 router.get('/', authRequired, ah(async (req, res) => {
   const [rows] = await pool.query(
     `SELECT ci.id, ci.product_id, ci.variant_id, ci.quantity,
-            p.slug, p.name_ar, p.name_en, p.price, p.compare_at_price,
+            p.slug, p.name_ar, p.name_en, p.price AS base_price, p.compare_at_price,
             v.size, v.color_name_ar, v.color_name_en, v.color_hex, v.stock,
-            (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
+            v.price_override, v.compare_at_override,
+            COALESCE(v.price_override, p.price) AS price,
+            COALESCE(
+              (SELECT url FROM variant_images WHERE product_id = p.id AND color_name_en = v.color_name_en ORDER BY sort_order LIMIT 1),
+              (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1)
+            ) AS image
      FROM cart_items ci
      JOIN products p ON p.id = ci.product_id
      JOIN product_variants v ON v.id = ci.variant_id

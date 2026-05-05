@@ -16,8 +16,14 @@ async function attachVariantsAndImages(products) {
     ids
   );
   const [vars] = await pool.query(
-    `SELECT id, product_id, size, color_name_ar, color_name_en, color_hex, stock, price_override
+    `SELECT id, product_id, size, color_name_ar, color_name_en, color_hex, stock,
+            price_override, compare_at_override
      FROM product_variants WHERE product_id IN (${placeholders})`,
+    ids
+  );
+  const [vimgs] = await pool.query(
+    `SELECT product_id, color_name_en, url, alt, sort_order
+     FROM variant_images WHERE product_id IN (${placeholders}) ORDER BY sort_order`,
     ids
   );
 
@@ -25,14 +31,25 @@ async function attachVariantsAndImages(products) {
   for (const i of imgs) (byProductImgs[i.product_id] ??= []).push(i);
   const byProductVars = {};
   for (const v of vars) (byProductVars[v.product_id] ??= []).push(v);
+  // group variant_images by product → color
+  const byProductColorImgs = {};
+  for (const v of vimgs) {
+    byProductColorImgs[v.product_id] ??= {};
+    (byProductColorImgs[v.product_id][v.color_name_en] ??= []).push(v);
+  }
 
   for (const p of products) {
-    p.images   = byProductImgs[p.id] || [];
-    p.variants = byProductVars[p.id] || [];
-    p.image    = p.images[0]?.url || null;
-    p.colors   = [...new Map(p.variants.map(v => [v.color_name_en, { name_ar: v.color_name_ar, name_en: v.color_name_en, hex: v.color_hex }])).values()];
-    p.sizes    = [...new Set(p.variants.map(v => v.size))];
-    p.in_stock = p.variants.some(v => v.stock > 0);
+    p.images        = byProductImgs[p.id] || [];
+    p.variants      = byProductVars[p.id] || [];
+    p.variant_images = byProductColorImgs[p.id] || {};  // { "Black": [...], "White": [...] }
+    p.image         = p.images[0]?.url || null;
+    p.colors        = [...new Map(p.variants.map(v => [v.color_name_en, { name_ar: v.color_name_ar, name_en: v.color_name_en, hex: v.color_hex }])).values()];
+    p.sizes         = [...new Set(p.variants.map(v => v.size))];
+    p.in_stock      = p.variants.some(v => v.stock > 0);
+    // Min/max price across variants
+    const variantPrices = p.variants.map(v => Number(v.price_override) || Number(p.price));
+    p.min_price = variantPrices.length ? Math.min(...variantPrices) : Number(p.price);
+    p.max_price = variantPrices.length ? Math.max(...variantPrices) : Number(p.price);
   }
   return products;
 }

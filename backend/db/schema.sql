@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS wishlist_items;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS coupons;
 DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS variant_images;
 DROP TABLE IF EXISTS product_variants;
 DROP TABLE IF EXISTS product_images;
 DROP TABLE IF EXISTS products;
@@ -119,9 +120,25 @@ CREATE TABLE product_variants (
   stock INT NOT NULL DEFAULT 0,
   sku_suffix VARCHAR(30),
   price_override DECIMAL(10,2) DEFAULT NULL,
+  compare_at_override DECIMAL(10,2) DEFAULT NULL,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   UNIQUE KEY uniq_variant (product_id, size, color_name_en),
   INDEX idx_variants_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- VARIANT IMAGES (color-specific gallery — keyed by color_name_en)
+-- One product has many color groups; each color has its own images.
+-- =====================================================
+CREATE TABLE variant_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  color_name_en VARCHAR(50) NOT NULL,
+  url VARCHAR(500) NOT NULL,
+  alt VARCHAR(200),
+  sort_order INT DEFAULT 0,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  INDEX idx_variant_images_color (product_id, color_name_en)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================
