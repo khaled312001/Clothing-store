@@ -36,11 +36,11 @@ export function Footer() {
       <div className="container-app py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Brand */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-brand-950 font-bold text-2xl">B</div>
+          <div className="flex items-center gap-3 mb-4">
+            <img src="/logo-mark.svg" alt="AURA" className="w-12 h-12" />
             <div>
-              <div className="font-bold text-white text-lg leading-none">{t.site.name}</div>
-              <div className="text-xs text-brand-300 mt-1">BARMAGLY · FASHION</div>
+              <div className="font-extrabold text-white text-lg leading-none tracking-tight">{t.site.name}</div>
+              <div className="text-xs text-brand-300 mt-1 tracking-[0.18em] font-bold">AURA · FASHION HOUSE</div>
             </div>
           </div>
           <p className="text-sm text-brand-200 leading-relaxed">
@@ -136,7 +136,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="font-bold text-accent-400 hover:text-accent-300 transition flex items-center gap-1.5"
             >
-              <span className="w-6 h-6 rounded-md bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-brand-950 font-bold text-xs">B</span>
+              <img src="/logo-mark.svg" alt="" className="w-5 h-5" />
               شركة برمجلي · Barmagly
             </a>
             <span className="text-brand-500">·</span>

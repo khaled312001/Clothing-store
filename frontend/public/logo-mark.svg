@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1f5188"/>
+      <stop offset="1" stop-color="#0e2342"/>
+    </linearGradient>
+    <linearGradient id="dot" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc847"/>
+      <stop offset="1" stop-color="#f59300"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Stylized A: two diagonal strokes + crossbar -->
+  <path d="M18 47 L31 16 L33 16 L46 47 L40 47 L36.5 38 L25.5 38 L22 47 Z M27.5 33 L34.5 33 L31 23 Z" fill="#fff"/>
+  <!-- Accent dot -->
+  <circle cx="49" cy="20" r="3.5" fill="url(#dot)"/>
+</svg>

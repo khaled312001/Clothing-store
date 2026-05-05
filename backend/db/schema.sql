@@ -204,7 +204,7 @@ CREATE TABLE orders (
   order_number VARCHAR(30) NOT NULL UNIQUE,
   user_id INT NOT NULL,
   status ENUM('pending','confirmed','processing','shipped','delivered','cancelled','refunded') NOT NULL DEFAULT 'pending',
-  payment_method ENUM('cod','card','fawry','paymob','vodafone_cash','instapay') NOT NULL,
+  payment_method ENUM('cod','card','fawry','paymob','vodafone_cash','instapay','cash','pos_card') NOT NULL,
   payment_status ENUM('unpaid','paid','failed','refunded') NOT NULL DEFAULT 'unpaid',
   subtotal DECIMAL(10,2) NOT NULL,
   shipping_fee DECIMAL(10,2) NOT NULL DEFAULT 0,

@@ -32,6 +32,16 @@ html[dir='ltr'] .rtl-only { display: none; }
   @apply animate-shimmer;
 }
 
+/* print styles for invoices ----------- */
+@media print {
+  body * { visibility: hidden; }
+  .printable, .printable * { visibility: visible; }
+  .printable { position: absolute; inset: 0; padding: 24px; }
+  .no-print { display: none !important; }
+  header, footer, aside, nav { display: none !important; }
+  @page { margin: 12mm; }
+}
+
 /* component layer ----------- */
 @layer components {
   .container-app {

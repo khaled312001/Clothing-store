@@ -56,4 +56,22 @@ router.delete('/', authRequired, ah(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// POST /api/cart/merge  → bulk merge guest cart on login
+router.post('/merge', authRequired, ah(async (req, res) => {
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  for (const it of items) {
+    if (!it.variant_id || !it.quantity) continue;
+    const [vrows] = await pool.query('SELECT product_id, stock FROM product_variants WHERE id = ?', [it.variant_id]);
+    if (!vrows.length) continue;
+    const qty = Math.min(it.quantity, vrows[0].stock);
+    if (qty < 1) continue;
+    await pool.query(
+      `INSERT INTO cart_items (user_id, product_id, variant_id, quantity) VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)`,
+      [req.user.id, vrows[0].product_id, it.variant_id, qty]
+    );
+  }
+  res.json({ ok: true });
+}));
+
 export default router;

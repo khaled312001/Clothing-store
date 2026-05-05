@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Heart, User, Search, Menu, X, Globe, ChevronDown, LogOut, Package, MapPin } from 'lucide-react';
+import { ShoppingBag, Heart, User, Search, Menu, X, Globe, ChevronDown, LogOut, Package, MapPin, Truck, Settings } from 'lucide-react';
 import { useAuth, useCart, useUI, useWishlist } from '@/lib/store';
 import { getDictionary } from '@/i18n/dictionaries';
 import { cn } from '@/lib/utils';
@@ -52,11 +52,13 @@ export function Header() {
       {/* Top utility bar */}
       <div className="bg-brand-900 text-white text-xs">
         <div className="container-app flex items-center justify-between py-2">
-          <span className="hidden sm:inline">
-            {locale === 'ar' ? '🚚 شحن مجاني للطلبات فوق 1500 ج.م' : '🚚 Free shipping on orders over 1500 EGP'}
+          <span className="hidden sm:inline-flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5 text-accent-300" />
+            {locale === 'ar' ? 'شحن مجاني للطلبات فوق 1500 ج.م' : 'Free shipping on orders over 1500 EGP'}
           </span>
-          <span className="sm:hidden">
-            {locale === 'ar' ? '🚚 شحن مجاني فوق 1500 ج.م' : '🚚 Free shipping over 1500'}
+          <span className="sm:hidden inline-flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5 text-accent-300" />
+            {locale === 'ar' ? 'شحن مجاني فوق 1500 ج.م' : 'Free shipping over 1500'}
           </span>
           <div className="flex items-center gap-3">
             <Link href="/contact" className="hover:text-accent-300 transition">{t.nav.contact}</Link>
@@ -74,13 +76,11 @@ export function Header() {
       {/* Main header */}
       <div className="container-app py-4 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-white font-bold text-xl shadow-md">
-            B
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+          <img src="/logo-mark.svg" alt="AURA" className="w-11 h-11 drop-shadow-sm group-hover:scale-105 transition-transform" />
           <div className="hidden sm:block">
-            <div className="font-bold text-brand-900 text-lg leading-none">{t.site.name}</div>
-            <div className="text-[10px] text-brand-500 font-medium leading-tight">BARMAGLY · FASHION</div>
+            <div className="font-extrabold text-brand-900 text-lg leading-none tracking-tight">{t.site.name}</div>
+            <div className="text-[10px] text-brand-500 font-bold leading-tight tracking-[0.18em] mt-1">AURA · FASHION HOUSE</div>
           </div>
         </Link>
 
@@ -143,7 +143,7 @@ export function Header() {
                     <Link href="/account/addresses" className="flex items-center gap-2 px-4 py-2 hover:bg-brand-50 text-sm"><MapPin className="w-4 h-4" />{t.account.addresses}</Link>
                     {user.role === 'admin' && (
                       <Link href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-brand-50 text-sm text-accent-600 font-semibold border-t">
-                        ⚙ {t.nav.admin}
+                        <Settings className="w-4 h-4" /> {t.nav.admin}
                       </Link>
                     )}
                     <button onClick={() => { logout(); router.push('/'); }} className="w-full text-start flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-sm text-red-600 border-t">
@@ -185,12 +185,14 @@ export function Header() {
       {/* Categories nav */}
       <nav className="hidden md:block bg-white border-t border-gray-100">
         <div className="container-app flex items-center gap-1 overflow-x-auto py-2">
-          <Link href="/" className="px-4 py-2 text-sm font-semibold rounded-lg hover:bg-brand-50 text-brand-800 whitespace-nowrap">
+          <Link href="/" className="px-4 py-2 text-sm font-bold rounded-lg hover:bg-brand-50 text-brand-800 whitespace-nowrap relative group">
             {t.nav.home}
+            <span className="absolute inset-x-3 -bottom-2 h-0.5 bg-accent-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
           </Link>
           {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="px-4 py-2 text-sm font-semibold rounded-lg hover:bg-brand-50 text-brand-800 whitespace-nowrap">
+            <Link key={l.href} href={l.href} className="px-4 py-2 text-sm font-bold rounded-lg hover:bg-brand-50 text-brand-800 whitespace-nowrap relative group">
               {l.label}
+              <span className="absolute inset-x-3 -bottom-2 h-0.5 bg-accent-400 scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
             </Link>
           ))}
         </div>

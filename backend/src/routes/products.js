@@ -108,6 +108,22 @@ router.get('/', ah(async (req, res) => {
   });
 }));
 
+// GET /api/products/by-ids?ids=1,2,3
+router.get('/by-ids', ah(async (req, res) => {
+  const ids = String(req.query.ids || '').split(',').map(s => Number(s.trim())).filter(Boolean);
+  if (!ids.length) return res.json({ products: [] });
+  const placeholders = ids.map(() => '?').join(',');
+  const [rows] = await pool.query(
+    `SELECT p.id, p.slug, p.sku, p.name_ar, p.name_en, p.brand, p.gender, p.price, p.compare_at_price,
+            p.rating_avg, p.rating_count, p.is_featured, p.is_new, c.slug AS category_slug
+     FROM products p JOIN categories c ON c.id = p.category_id
+     WHERE p.id IN (${placeholders}) AND p.is_active = 1`,
+    ids
+  );
+  await attachVariantsAndImages(rows);
+  res.json({ products: rows });
+}));
+
 // GET /api/products/featured
 router.get('/featured', ah(async (_req, res) => {
   const [rows] = await pool.query(

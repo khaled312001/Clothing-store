@@ -1,7 +1,11 @@
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import pool from '../src/db.js';
-import { categories, products, coupons, reviews } from './seed-data.js';
+import { categories, products as baseProducts, coupons, reviews as baseReviews } from './seed-data.js';
+import { extraProducts, extraReviews } from './seed-data-extra.js';
+
+const products = [...baseProducts, ...extraProducts];
+const reviews = [...baseReviews, ...extraReviews];
 
 dotenv.config();
 
@@ -152,27 +156,59 @@ async function seedReviews(conn, productIds, userIds) {
   `);
 }
 
+async function seedAddresses(conn, userIds) {
+  const sample = [
+    { user: 'customer@example.com', name: 'محمد أحمد',     phone: '+201112223344', gov: 'القاهرة',     city: 'مدينة نصر',  street: 'شارع مكرم عبيد', building: '15', is_default: 1 },
+    { user: 'sara@example.com',     name: 'سارة علي',       phone: '+201100001111', gov: 'الجيزة',       city: 'الدقي',       street: 'شارع التحرير',     building: '22', is_default: 1 },
+    { user: 'khaled@example.com',   name: 'Khaled Hassan', phone: '+201500001234', gov: 'الإسكندرية',  city: 'سيدي بشر',   street: 'شارع جمال عبدالناصر', building: '10', is_default: 1 },
+    { user: 'customer@example.com', name: 'محمد أحمد',     phone: '+201112223344', gov: 'القاهرة',     city: 'المعادي',     street: 'شارع 9',           building: '5',  is_default: 0 },
+  ];
+  for (const a of sample) {
+    await conn.query(
+      `INSERT INTO addresses (user_id, full_name, phone, governorate, city, street, building, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [userIds[a.user], a.name, a.phone, a.gov, a.city, a.street, a.building, a.is_default]
+    );
+  }
+}
+
 async function seedSampleOrders(conn, productIds, userIds) {
-  const customerId = userIds['customer@example.com'];
+  const customers = [
+    { id: userIds['customer@example.com'], name: 'محمد أحمد',     phone: '+201112223344', gov: 'القاهرة',     city: 'مدينة نصر',  street: 'شارع مكرم عبيد' },
+    { id: userIds['sara@example.com'],     name: 'سارة علي',       phone: '+201100001111', gov: 'الجيزة',       city: 'الدقي',       street: 'شارع التحرير' },
+    { id: userIds['khaled@example.com'],   name: 'Khaled Hassan', phone: '+201500001234', gov: 'الإسكندرية',  city: 'سيدي بشر',   street: 'شارع جمال عبدالناصر' },
+  ];
   const [variants] = await conn.query(
     `SELECT pv.id AS variant_id, pv.product_id, pv.size, pv.color_name_ar, pv.color_name_en, pv.color_hex,
             p.name_ar, p.name_en, p.price,
             (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
      FROM product_variants pv JOIN products p ON p.id = pv.product_id
-     LIMIT 6`
+     ORDER BY RAND()
+     LIMIT 60`
   );
 
+  // Mix of statuses for realistic dashboard analytics
   const orderConfigs = [
-    { status: 'delivered', payment_status: 'paid', payment_method: 'card', daysAgo: 25 },
-    { status: 'shipped',   payment_status: 'paid', payment_method: 'paymob', daysAgo: 4 },
-    { status: 'pending',   payment_status: 'unpaid', payment_method: 'cod', daysAgo: 1 },
+    { status: 'delivered', payment_status: 'paid',    payment_method: 'card',          daysAgo: 28, qty: 2 },
+    { status: 'delivered', payment_status: 'paid',    payment_method: 'paymob',        daysAgo: 22, qty: 3 },
+    { status: 'delivered', payment_status: 'paid',    payment_method: 'cod',           daysAgo: 18, qty: 1 },
+    { status: 'delivered', payment_status: 'paid',    payment_method: 'fawry',         daysAgo: 14, qty: 2 },
+    { status: 'shipped',   payment_status: 'paid',    payment_method: 'paymob',        daysAgo: 6,  qty: 2 },
+    { status: 'shipped',   payment_status: 'paid',    payment_method: 'instapay',      daysAgo: 4,  qty: 1 },
+    { status: 'processing',payment_status: 'paid',    payment_method: 'card',          daysAgo: 3,  qty: 2 },
+    { status: 'confirmed', payment_status: 'paid',    payment_method: 'vodafone_cash', daysAgo: 2,  qty: 1 },
+    { status: 'pending',   payment_status: 'unpaid',  payment_method: 'cod',           daysAgo: 1,  qty: 2 },
+    { status: 'pending',   payment_status: 'unpaid',  payment_method: 'cod',           daysAgo: 0,  qty: 3 },
+    { status: 'cancelled', payment_status: 'refunded',payment_method: 'card',          daysAgo: 12, qty: 1 },
   ];
 
   let orderNum = 1001;
   for (const cfg of orderConfigs) {
-    const items = variants.slice(0, 2 + Math.floor(Math.random() * 2));
+    const customer = customers[orderNum % customers.length];
+    const startIdx = Math.floor(Math.random() * Math.max(1, variants.length - cfg.qty));
+    const items = variants.slice(startIdx, startIdx + cfg.qty);
+    if (!items.length) continue;
     const subtotal = items.reduce((s, it) => s + Number(it.price) * 1, 0);
-    const shipping = 60;
+    const shipping = subtotal >= 1500 ? 0 : 60;
     const total = subtotal + shipping;
 
     const [o] = await conn.query(
@@ -181,9 +217,9 @@ async function seedSampleOrders(conn, productIds, userIds) {
         shipping_full_name, shipping_phone, shipping_governorate, shipping_city, shipping_street, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, DATE_SUB(NOW(), INTERVAL ? DAY))`,
       [
-        `BMG-${orderNum++}`, customerId, cfg.status, cfg.payment_method, cfg.payment_status,
+        `BMG-${orderNum++}`, customer.id, cfg.status, cfg.payment_method, cfg.payment_status,
         subtotal, shipping, total,
-        'محمد أحمد', '+201112223344', 'القاهرة', 'مدينة نصر', 'شارع مكرم عبيد',
+        customer.name, customer.phone, customer.gov, customer.city, customer.street,
         cfg.daysAgo
       ]
     );
@@ -205,8 +241,8 @@ async function seedSampleOrders(conn, productIds, userIds) {
 
 async function seedSettings(conn) {
   const defaults = {
-    site_name_ar: 'برمجلي للأزياء',
-    site_name_en: 'Barmagly Fashion',
+    site_name_ar: 'أُورا للأزياء',
+    site_name_en: 'AURA Fashion',
     free_shipping_threshold: '1500',
     default_shipping_fee: '60',
     currency: 'EGP',
@@ -239,6 +275,9 @@ async function run() {
 
     console.log('→ Seeding reviews…');
     await seedReviews(conn, productIds, userIds);
+
+    console.log('→ Seeding addresses…');
+    await seedAddresses(conn, userIds);
 
     console.log('→ Seeding sample orders…');
     await seedSampleOrders(conn, productIds, userIds);
