@@ -58,7 +58,9 @@ app.use('/api/addresses',     addressRoutes);
 app.use('/api/orders',        orderRoutes);
 app.use('/api/coupons',       couponRoutes);
 app.use('/api/reviews',       reviewRoutes);
-app.use('/api/admin/uploads', uploadRoutes);
+// Uploads — both customers (payment proofs) and admins (product photos) can use
+app.use('/api/uploads',       uploadRoutes);
+app.use('/api/admin/uploads', uploadRoutes);  // back-compat for existing admin form
 app.use('/api/admin',         adminRoutes);
 app.use('/api/settings',      settingRoutes);
 

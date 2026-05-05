@@ -4,7 +4,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { authRequired, adminRequired } from '../middleware/auth.js';
+import { authRequired } from '../middleware/auth.js';
 import { ah } from '../utils/asyncHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -32,9 +32,10 @@ const upload = multer({
 });
 
 const router = Router();
-router.use(authRequired, adminRequired);
+// Any logged-in user can upload (customers upload payment proofs, admins upload product photos)
+router.use(authRequired);
 
-// POST /api/admin/uploads — multipart/form-data, field name: "files" (multiple)
+// POST /api/uploads — multipart/form-data, field name: "files" (multiple)
 router.post('/', upload.array('files', 10), ah(async (req, res) => {
   if (!req.files?.length) return res.status(400).json({ error: 'No files received' });
   const proto = req.headers['x-forwarded-proto'] || req.protocol;

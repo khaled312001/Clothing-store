@@ -263,6 +263,17 @@ async function seedSettings(conn) {
     contact_phone: '+201010254819',
     contact_email: 'info@barmagly.tech',
     contact_whatsapp: '201010254819',
+    // Payment account details — shown on checkout when customer picks an electronic method
+    pay_vodafone_number: '01010254819',
+    pay_vodafone_name: 'AURA Fashion',
+    pay_instapay_handle: 'aura@instapay',
+    pay_instapay_name: 'AURA Fashion Store',
+    pay_fawry_code: '999888',
+    pay_paymob_link: 'https://accept.paymobsolutions.com/api/acceptance/iframes/aura',
+    pay_bank_name: 'CIB Bank',
+    pay_bank_account: '100025456789',
+    pay_bank_iban: 'EG380010000100002545678901',
+    pay_bank_holder: 'AURA Fashion House',
   };
   for (const [k, v] of Object.entries(defaults)) {
     await conn.query(`INSERT INTO settings (\`key\`, \`value\`) VALUES (?, ?)`, [k, v]);

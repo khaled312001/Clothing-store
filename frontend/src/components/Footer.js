@@ -110,14 +110,20 @@ export function Footer() {
         <div className="container-app py-6 flex flex-wrap items-center justify-between gap-4">
           <div className="text-sm text-brand-300">{t.footer.payments}</div>
           <div className="flex flex-wrap items-center gap-2">
-            {['VISA', 'MASTERCARD', 'MEEZA', 'FAWRY', 'PAYMOB', 'INSTAPAY', 'VODAFONE CASH'].map((p) => (
-              <span key={p} className="px-3 py-1.5 bg-white/10 text-xs rounded-md font-bold tracking-wider text-white">
-                {p}
-              </span>
+            {[
+              { src: '/payments/visa.svg',          alt: 'Visa' },
+              { src: '/payments/mastercard.svg',    alt: 'Mastercard' },
+              { src: '/payments/meeza.svg',         alt: 'Meeza' },
+              { src: '/payments/fawry.svg',         alt: 'Fawry' },
+              { src: '/payments/paymob.svg',        alt: 'Paymob' },
+              { src: '/payments/instapay.svg',      alt: 'InstaPay' },
+              { src: '/payments/vodafone-cash.svg', alt: 'Vodafone Cash' },
+              { src: '/payments/cod.svg',           alt: 'COD' },
+            ].map((p) => (
+              <div key={p.alt} className="bg-white rounded-lg p-1.5 h-9 flex items-center" title={p.alt}>
+                <img src={p.src} alt={p.alt} className="h-6 w-auto" />
+              </div>
             ))}
-            <span className="px-3 py-1.5 bg-emerald-500 text-xs rounded-md font-bold text-white">
-              {locale === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery'}
-            </span>
           </div>
         </div>
       </div>

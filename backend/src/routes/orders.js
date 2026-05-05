@@ -19,6 +19,19 @@ router.get('/', authRequired, ah(async (req, res) => {
   res.json({ orders });
 }));
 
+// POST /api/orders/:id/payment-proof — customer uploads transfer screenshot
+router.post('/:id/payment-proof', authRequired, ah(async (req, res) => {
+  const { payment_proof_url, payment_reference, payment_notes } = req.body;
+  if (!payment_proof_url) return res.status(400).json({ error: 'payment_proof_url required' });
+  const [r] = await pool.query(
+    `UPDATE orders SET payment_proof_url = ?, payment_reference = ?, payment_notes = ?
+     WHERE id = ? AND user_id = ?`,
+    [payment_proof_url, payment_reference || null, payment_notes || null, req.params.id, req.user.id]
+  );
+  if (!r.affectedRows) return res.status(404).json({ error: 'Order not found' });
+  res.json({ ok: true });
+}));
+
 // GET /api/orders/:id
 router.get('/:id', authRequired, ah(async (req, res) => {
   const [rows] = await pool.query(
@@ -46,10 +59,19 @@ router.post('/', authRequired, ah(async (req, res) => {
     shipping_building,
     shipping_apartment,
     shipping_notes,
+    payment_proof_url,
+    payment_reference,
+    payment_notes,
   } = req.body;
 
   if (!shipping_full_name || !shipping_phone || !shipping_governorate || !shipping_city || !shipping_street) {
     return res.status(400).json({ error: 'Missing shipping fields' });
+  }
+
+  // Electronic methods require proof of transfer
+  const requiresProof = ['fawry','paymob','vodafone_cash','instapay','card'].includes(payment_method);
+  if (requiresProof && !payment_proof_url) {
+    return res.status(400).json({ error: 'Payment proof (transfer screenshot) is required' });
   }
 
   const conn = await pool.getConnection();
@@ -119,18 +141,24 @@ router.post('/', authRequired, ah(async (req, res) => {
     const total = Math.max(0, subtotal - discount + shipping_fee);
 
     // 6) Create order
+    // For COD: unpaid until delivery. For electronic with proof: pending verification (unpaid → admin approves).
+    const initialPaymentStatus = payment_method === 'cod' ? 'unpaid'
+                               : requiresProof ? 'unpaid'   // pending admin verification of transfer screenshot
+                               : 'paid';
     const [or] = await conn.query(
       `INSERT INTO orders
        (order_number, user_id, status, payment_method, payment_status, subtotal, shipping_fee, discount, tax, total, coupon_code,
         shipping_full_name, shipping_phone, shipping_governorate, shipping_city, shipping_street,
-        shipping_building, shipping_apartment, shipping_notes)
-       VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        shipping_building, shipping_apartment, shipping_notes,
+        payment_proof_url, payment_reference, payment_notes)
+       VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         genOrderNumber(), req.user.id, payment_method,
-        payment_method === 'cod' ? 'unpaid' : 'paid', // demo: card auto-paid
+        initialPaymentStatus,
         subtotal, shipping_fee, discount, total, appliedCode,
         shipping_full_name, shipping_phone, shipping_governorate, shipping_city, shipping_street,
-        shipping_building || null, shipping_apartment || null, shipping_notes || null
+        shipping_building || null, shipping_apartment || null, shipping_notes || null,
+        payment_proof_url || null, payment_reference || null, payment_notes || null
       ]
     );
     const orderId = or.insertId;
