@@ -15,11 +15,27 @@ export default function AdminLayout({ children }) {
   const isAr = locale === 'ar';
 
   useEffect(() => {
-    if (!token) router.replace('/auth/login?next=/admin');
+    // Skip auth checks on the admin login page itself
+    if (pathname === '/admin/login') return;
+    if (!token) router.replace('/admin/login?next=' + encodeURIComponent(pathname));
     else if (user && user.role !== 'admin') router.replace('/');
-  }, [token, user, router]);
+  }, [token, user, router, pathname]);
 
-  if (!token || !user || user.role !== 'admin') return null;
+  // The admin login page renders standalone — no sidebar/topbar
+  if (pathname === '/admin/login') return children;
+
+  // Wait until both token AND user are present and role is verified before rendering children.
+  // This prevents child pages from firing /admin/* requests before auth is confirmed.
+  if (!token) return null;
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 rounded-full border-4 border-brand-200 border-t-brand-700 animate-spin" />
+        <div className="text-sm text-brand-600 font-semibold">{isAr ? 'جاري التحقق…' : 'Verifying…'}</div>
+      </div>
+    </div>
+  );
+  if (user.role !== 'admin') return null;
 
   const links = [
     { href: '/admin',           label: isAr ? 'لوحة المعلومات' : 'Dashboard', icon: LayoutDashboard },

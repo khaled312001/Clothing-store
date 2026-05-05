@@ -5,17 +5,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Package, ShoppingCart, Users, DollarSign, AlertTriangle, Clock, TrendingUp, Star, UserPlus, Receipt, BarChart3, Boxes, ScanLine } from 'lucide-react';
 import { api } from '@/lib/api';
-import { useUI } from '@/lib/store';
+import { useUI, useAuth } from '@/lib/store';
 import { cn, formatPrice, formatDate, STATUS_COLORS, STATUS_LABELS } from '@/lib/utils';
 
 export default function AdminDashboard() {
   const { locale } = useUI();
   const isAr = locale === 'ar';
+  const { user } = useAuth();
   const [data, setData] = useState(null);
 
   useEffect(() => {
+    if (user?.role !== 'admin') return;
     api.get('/admin/stats').then(setData).catch(() => {});
-  }, []);
+  }, [user]);
 
   if (!data) return <div className="text-center py-12 text-gray-500">{isAr ? 'جاري التحميل…' : 'Loading…'}</div>;
 

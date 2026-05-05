@@ -20,6 +20,7 @@ export const useAuth = create(persist(
       set({ token: null, user: null });
     },
     refresh: async () => {
+      if (typeof window === 'undefined' || !localStorage.getItem('bmg_token')) return;
       try {
         const { user } = await api.get('/auth/me');
         set({ user });
@@ -64,8 +65,9 @@ export const useCart = create(persist(
       set({ subtotal, count });
     },
 
-    // server cart (logged-in users)
+    // server cart (logged-in users) — silently no-op for guests
     fetchServer: async () => {
+      if (typeof window === 'undefined' || !localStorage.getItem('bmg_token')) return;
       try {
         const { items, subtotal, count } = await api.get('/cart');
         set({ serverItems: items, subtotal, count });
@@ -106,6 +108,7 @@ export const useWishlist = create(persist(
       set({ productIds: ids });
     },
     fetchServer: async () => {
+      if (typeof window === 'undefined' || !localStorage.getItem('bmg_token')) return;
       try {
         const { items } = await api.get('/wishlist');
         set({ items, productIds: items.map(i => i.product_id) });

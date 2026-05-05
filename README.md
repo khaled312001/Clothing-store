@@ -76,9 +76,9 @@ Clothing store/
 
 1. **Node.js 20+** — تحقق: `node --version`
 2. **npm 10+** — تحقق: `npm --version`
-3. **MySQL 8+** شغّال على `localhost:3306`
-   - أسهل طريقة: ثبّت **XAMPP** أو **MySQL Community Server**
-   - تأكد إن الـMySQL service شغّال
+3. **قاعدة بيانات MySQL** — اختر واحدة من خيارين:
+   - **محلي:** ثبّت **XAMPP** أو **MySQL Community Server** على جهازك
+   - **online (Hostinger):** استخدم بياناتك من hPanel → Databases → Remote MySQL (مفعّل في الإعداد الحالي)
 
 ---
 
@@ -98,8 +98,9 @@ npm run install:all
 
 ### 2) إعدادات الاتصال بـMySQL
 
-افتح ملف `backend/.env` وعدّله حسب إعدادات MySQL عندك:
+افتح `backend/.env` واختر **أحد** الخيارين:
 
+#### الخيار A: MySQL محلي (XAMPP)
 ```env
 PORT=4000
 NODE_ENV=development
@@ -107,7 +108,7 @@ NODE_ENV=development
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=                         # ← لو فيه كلمة سر MySQL ضعها هنا
+DB_PASSWORD=                         # ← اتركه فاضي لو مفيش password
 DB_NAME=aura_store
 
 JWT_SECRET=aura-dev-secret-please-replace-in-production-2026
@@ -116,7 +117,24 @@ JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:3000
 ```
 
-ملاحظة: لو الـDB اسمه عندك مختلف، عدّل `DB_NAME`. الـmigrate script هينشئه تلقائياً لو مش موجود.
+#### الخيار B: Hostinger Remote MySQL (الإعداد الحالي)
+```env
+PORT=4000
+NODE_ENV=development
+
+DB_HOST=srv448.hstgr.io
+DB_PORT=3306
+DB_USER=u696043789_clothing
+DB_PASSWORD="7#Z@WleE!Bx"            # ← الـquotes مهمة! الـ# بيتفسر comment بدونها
+DB_NAME=u696043789_clothing
+
+JWT_SECRET=aura-prod-secret-please-change-this-to-long-random-string-2026
+JWT_EXPIRES_IN=7d
+
+CORS_ORIGIN=http://localhost:3000
+```
+
+> ⚠️ **مهم لـHostinger:** افتح hPanel → Databases → Remote MySQL وأضف IP جهازك (أو فعّل "Any Host") قبل أول اتصال.
 
 ملف `frontend/.env.local`:
 ```env
@@ -180,6 +198,8 @@ npm run dev:frontend
 | الصفحة | الرابط |
 |---|---|
 | **المتجر (الواجهة)** | http://localhost:3000 |
+| **دخول العميل** | http://localhost:3000/auth/login |
+| **🔐 دخول الأدمن** | **http://localhost:3000/admin/login** |
 | **لوحة التحكم** | http://localhost:3000/admin |
 | **نقطة البيع POS** | http://localhost:3000/admin/pos |
 | **التقارير** | http://localhost:3000/admin/reports |
@@ -189,16 +209,20 @@ npm run dev:frontend
 | **Sitemap** | http://localhost:3000/sitemap.xml |
 | **Robots.txt** | http://localhost:3000/robots.txt |
 
+> 💡 الأدمن له صفحة دخول مخصصة بمسار `/admin/login` بتصميم split-screen احترافي. لو حاول دخول `/admin` بدون login، يـredirect تلقائياً للصفحة دي.
+
 ---
 
 ## 🔑 بيانات الدخول التجريبية
 
 ### حساب المدير (Admin)
 ```
+URL:      http://localhost:3000/admin/login
 Email:    admin@barmagly.tech
 Password: Admin@12345
 ```
-الوصول الكامل لـ `/admin` (لوحة التحكم + POS + التقارير + كل شيء)
+الوصول الكامل لـ `/admin` (لوحة التحكم + POS + التقارير + المخزون + كل شيء).
+صفحة دخول الأدمن مصممة بـsplit-screen احترافي ومنفصلة تماماً عن دخول العملاء.
 
 ### حسابات العملاء (Customers)
 ```
@@ -318,14 +342,29 @@ mysql -u root -p
 - الصور بتيجي من Unsplash (إنترنت مطلوب)
 - لو الإنترنت بطيء جرّب hard refresh (`Ctrl+Shift+R`)
 
-### الـ`/icon.svg 500` أو chunks `404`
-السبب: cache فاسد بعد build قديم. الحل:
+### الـ`/icon.svg 500` أو chunks `404`/`500`
+السبب: cache فاسد في `.next` بعد build قديم، أو ملف `icon.svg` مكرر بين `app/` و`public/`. الحل:
 ```powershell
+# 1. أوقف الـdev server (Ctrl+C)
+# 2. امسح الـcache
 cd "E:\Clothing store\frontend"
-Remove-Item -Recurse -Force .next
+Remove-Item -Recurse -Force .next, node_modules\.cache -ErrorAction SilentlyContinue
+
+# 3. تأكد إن مفيش icon.svg مكرر
+# (المفروض يكون موجود فقط في src/app/icon.svg)
+
+# 4. شغّل من جديد
 npm run dev:frontend
 ```
-وافتح المتصفح بـ hard refresh.
+وافتح المتصفح بـ **hard refresh** (`Ctrl+Shift+R`).
+
+### Hostinger: `Access denied for user`
+أحد سببين:
+1. **الـpassword فيه `#`** — في `.env` لازم يكون بين `"..."` وإلا dotenv يقطعها كـcomment
+2. **IP غير مصرّح به** — افتح hPanel → Databases → Remote MySQL وأضف IP أو فعّل "Any Host" واضغط **Save**
+
+### الـ401 على `/api/admin/stats`, `/api/cart`, `/api/wishlist`, `/api/auth/me`
+**ده طبيعي ومتوقع** — الـcalls دي محمية وبتحتاج JWT token. لو شفتها قبل تسجيل الدخول معناها الفرونت بيحاول يجيبها وهو لسه ما عملش login (تم إخفاؤها بالفعل في النسخة الحالية).
 
 ### Port 4000 أو 3000 مشغول
 ابحث عن العملية وأوقفها:
